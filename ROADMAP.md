@@ -42,16 +42,16 @@
 
 **Done when**: `convdrift run <transcript>` prints a Tier 1 score and per-metric breakdown. Score updates as the transcript grows.
 
-- [ ] Implement M1: Tool Error Rate (proportion of `is_error: true` tool results per window)
-- [ ] Implement M2: Action Mix (productive / exploratory / recursive distribution)
-- [ ] Implement M4: User Message Length Trend (slope over last W episodes)
-- [ ] Implement M3: Token Asymmetry Ratio *(stub only — excluded from composite)*
-- [ ] Implement M5: Cache Efficiency Drop *(stub only — excluded from composite)*
-- [ ] Sliding window engine (default W=5 episodes, configurable)
-- [ ] Score smoothing: 3-episode moving average
-- [ ] Score store: SQLite schema (`scores`, `metrics`, `sessions` tables)
-- [ ] `convdrift run <transcript>` CLI command — live score with per-metric output
-- [ ] Tests: known-bad and known-good transcript fixtures produce expected score direction
+- [x] Implement M1: Tool Error Rate (proportion of `is_error: true` tool results per window)
+- [x] Implement M2: Action Mix (productive / exploratory / recursive distribution)
+- [x] Implement M4: User Message Length Trend (slope over last W episodes)
+- [x] Implement M3: Token Asymmetry Ratio *(stub only — excluded from composite)*
+- [x] Implement M5: Cache Efficiency Drop *(stub only — excluded from composite)*
+- [x] Sliding window engine (default W=5 episodes, configurable)
+- [x] Score smoothing: 3-episode moving average
+- [x] Score store: SQLite schema (`scores`, `metrics`, `sessions` tables)
+- [x] `convdrift run <transcript>` CLI command — live score with per-metric output
+- [x] Tests: known-bad and known-good transcript fixtures produce expected score direction
 
 ---
 

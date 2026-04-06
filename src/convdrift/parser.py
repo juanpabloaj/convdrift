@@ -5,8 +5,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterator
 
-from watchfiles import Change, watch
+from watchfiles import watch
 
+from ._utils import transcript_was_updated
 from .models import Message, ToolCall, ToolResult, Usage
 
 
@@ -27,7 +28,7 @@ def read_jsonl(
                 break
             assert watcher is not None
             changes = next(watcher)
-            if _transcript_was_updated(changes, path):
+            if transcript_was_updated(changes, path):
                 continue
 
 
@@ -174,17 +175,6 @@ def _coerce_int(value: Any) -> int | None:
         return int(value)
     except (TypeError, ValueError):
         return None
-
-
-def _transcript_was_updated(
-    changes: set[tuple[Change, str]], transcript_path: Path
-) -> bool:
-    for change, changed_path in changes:
-        if Path(changed_path) != transcript_path:
-            continue
-        if change in {Change.added, Change.modified}:
-            return True
-    return False
 
 
 def _classify_message_kind(
