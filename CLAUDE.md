@@ -45,6 +45,15 @@ Session stagnation and looping detection for human-LLM coding sessions.
 - Stack-agnostic: DESIGN.md does not prescribe implementation technologies
 - Multilingual: handles mixed-language conversations
 
+## External Agent Conventions
+
+When invoking Codex or Gemini, always resume the previous session to preserve context:
+
+- **Codex**: `codex exec resume --last "prompt"`
+- **Gemini**: `gemini -r latest -p "prompt"`
+
+Never start a new session when a prior one exists.
+
 ## Git Conventions
 
 - Do not use `git add -A` or `git add .` — stage files explicitly by name to avoid accidentally including unintended files.
