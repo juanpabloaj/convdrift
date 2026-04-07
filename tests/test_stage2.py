@@ -5,6 +5,7 @@ from typer.testing import CliRunner
 from convdrift.cli import app
 from convdrift.config import Config, default_config_text, load_config
 from convdrift.metrics import (
+    _classify_tool_call,
     _classify_bash_call,
     _extract_ngrams,
     compute_tier2_metrics,
@@ -45,6 +46,12 @@ def test_bash_build_and_test_commands_classified_as_neutral() -> None:
         assert result == "neutral", (
             f"Expected 'neutral' for '{command}', got '{result}'"
         )
+
+
+def test_unknown_tool_defaults_to_neutral() -> None:
+    tool_call = ToolCall(name="mcp__some_tool", input={"query": "status"})
+
+    assert _classify_tool_call(tool_call) == "neutral"
 
 
 def test_tier2_metrics_detect_repetition_and_corrections() -> None:

@@ -100,6 +100,7 @@
 - [x] **M6 fix**: replace `[a-z0-9_]+` with `\w+` in `_extract_ngrams` so accented and non-ASCII tokens are not silently dropped before n-gram computation
 - [x] **M7 rename**: rename `correction_density` → `correction_marker_rate` throughout metrics, scoring, store, history, statusline, cli, and tests
 - [x] **JSONL timeline semantics**: document `append_session_timeline` as immutable event log (scores at time of computation, not recomputed)
+- [x] **M2 unknown-tool fallback**: change `_classify_tool_call` fallback for unrecognized non-Bash tools (MCP tools, custom tools) from `"exploratory"` to `"neutral"`; add unit test
 - [ ] **M4 normalization** *(low priority — may defer to Stage 5)*: evaluate whether dividing slope by `average_length` vs `max_length` better captures re-explanation signal; update `_normalize_positive_trend` if a clearly better formula is found
 
 ---

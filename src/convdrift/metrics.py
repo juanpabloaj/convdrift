@@ -181,7 +181,7 @@ def _classify_tool_call(tool_call: ToolCall) -> str:
         return "recursive"
     if tool_name == "bash":
         return _classify_bash_call(tool_call)
-    return "exploratory"
+    return "neutral"
 
 
 def _classify_bash_call(tool_call: ToolCall) -> str:
