@@ -61,13 +61,13 @@
 
 **Done when**: `convdrift run` outputs a T1+T2 composite score; weights and thresholds can be overridden via a config file without code changes.
 
-- [ ] Implement M6: Lexical Stagnation Index (trigram overlap across last K assistant text blocks)
-- [ ] Implement M7: Correction/Negation Density (multilingual pattern list, configurable)
-- [ ] Composite score engine: weighted combination across available tiers
-- [ ] Config file (`convdrift.toml`): weights, thresholds, window size, smoothing window
-- [ ] Score output formats: `score-only`, `with-metrics`, `by-tier`, `full` (see DESIGN.md)
-- [ ] `convdrift config init` — generate default config file
-- [ ] Tests: weight overrides produce expected composite changes
+- [x] Implement M6: Lexical Stagnation Index (trigram overlap across last K assistant text blocks)
+- [x] Implement M7: Correction/Negation Density (multilingual pattern list, configurable)
+- [x] Composite score engine: weighted combination across available tiers
+- [x] Config file (`convdrift.toml`): weights, thresholds, window size, smoothing window
+- [x] Score output formats: `score-only`, `with-metrics`, `by-tier`, `full` (see DESIGN.md)
+- [x] `convdrift config init` — generate default config file
+- [x] Tests: weight overrides produce expected composite changes
 
 ---
 

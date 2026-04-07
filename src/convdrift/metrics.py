@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
+from collections import Counter
 from typing import Iterable
 
+from .config import Config
 from .models import Episode, Message, ToolCall
 
 
@@ -52,7 +55,15 @@ class Tier1Metrics:
     cache_efficiency_drop: float | None
 
 
-def compute_tier1_metrics(episodes: list[Episode]) -> Tier1Metrics:
+@dataclass(slots=True)
+class Tier2Metrics:
+    lexical_stagnation_index: float
+    correction_density: float
+
+
+def compute_tier1_metrics(
+    episodes: list[Episode], *, config: Config | None = None
+) -> Tier1Metrics:
     """Compute Tier 1 metrics for a window of episodes.
 
     `action_mix_score` is a derived drift signal, not the neutral distribution itself.
@@ -224,3 +235,79 @@ def _compute_cache_efficiency_drop(messages: list[Message]) -> float | None:
     baseline = sum(efficiencies[:-1]) / len(efficiencies[:-1])
     latest = efficiencies[-1]
     return max(0.0, baseline - latest)
+
+
+def compute_tier2_metrics(episodes: list[Episode], *, config: Config) -> Tier2Metrics:
+    assistant_blocks = [
+        message.text
+        for episode in episodes
+        for message in episode.messages
+        if message.role == "assistant" and message.text
+    ]
+    user_messages = [
+        episode.user_message.text for episode in episodes if episode.user_message.text
+    ]
+
+    lexical_stagnation_index = _compute_lexical_stagnation_index(
+        assistant_blocks,
+        block_count=config.analysis.lexical_block_count,
+        ngram_size=config.analysis.lexical_ngram_size,
+    )
+    correction_density = _compute_correction_density(
+        user_messages,
+        patterns=config.patterns.corrections,
+    )
+    return Tier2Metrics(
+        lexical_stagnation_index=lexical_stagnation_index,
+        correction_density=correction_density,
+    )
+
+
+def _compute_lexical_stagnation_index(
+    assistant_blocks: list[str], *, block_count: int, ngram_size: int
+) -> float:
+    recent_blocks = assistant_blocks[-block_count:]
+    if len(recent_blocks) < 2:
+        return 0.0
+
+    overlap_scores: list[float] = []
+    previous_ngrams = _extract_ngrams(recent_blocks[0], ngram_size)
+    for block in recent_blocks[1:]:
+        current_ngrams = _extract_ngrams(block, ngram_size)
+        if not previous_ngrams or not current_ngrams:
+            overlap_scores.append(0.0)
+        else:
+            shared = sum((previous_ngrams & current_ngrams).values())
+            total = min(sum(previous_ngrams.values()), sum(current_ngrams.values()))
+            overlap_scores.append(shared / total if total else 0.0)
+        previous_ngrams = current_ngrams
+
+    if not overlap_scores:
+        return 0.0
+    return sum(overlap_scores) / len(overlap_scores)
+
+
+def _extract_ngrams(text: str, ngram_size: int) -> Counter[tuple[str, ...]]:
+    tokens = re.findall(r"[a-z0-9_]+", text.lower())
+    if len(tokens) < ngram_size:
+        return Counter()
+    return Counter(
+        tuple(tokens[index : index + ngram_size])
+        for index in range(len(tokens) - ngram_size + 1)
+    )
+
+
+def _compute_correction_density(
+    user_messages: list[str], *, patterns: list[str]
+) -> float:
+    if not user_messages:
+        return 0.0
+
+    pattern_hits = 0
+    lowered_patterns = [pattern.lower() for pattern in patterns]
+    for message in user_messages:
+        lowered = message.lower()
+        if any(pattern in lowered for pattern in lowered_patterns):
+            pattern_hits += 1
+
+    return pattern_hits / len(user_messages)

@@ -36,6 +36,9 @@ class ScoreStore:
                     window_size INTEGER NOT NULL,
                     raw_score REAL NOT NULL,
                     smoothed_score REAL NOT NULL,
+                    tier1_score REAL,
+                    tier2_score REAL,
+                    active_tiers TEXT,
                     created_at TEXT NOT NULL,
                     UNIQUE(session_id, chain_id, episode_count),
                     FOREIGN KEY(session_id) REFERENCES sessions(id)
@@ -55,6 +58,7 @@ class ScoreStore:
                 )
                 """
             )
+            _ensure_score_columns(connection)
 
     def persist_snapshot(
         self,
@@ -85,13 +89,19 @@ class ScoreStore:
                     window_size,
                     raw_score,
                     smoothed_score,
+                    tier1_score,
+                    tier2_score,
+                    active_tiers,
                     created_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(session_id, chain_id, episode_count) DO UPDATE SET
                     window_size = excluded.window_size,
                     raw_score = excluded.raw_score,
                     smoothed_score = excluded.smoothed_score,
+                    tier1_score = excluded.tier1_score,
+                    tier2_score = excluded.tier2_score,
+                    active_tiers = excluded.active_tiers,
                     created_at = excluded.created_at
                 """,
                 (
@@ -101,6 +111,9 @@ class ScoreStore:
                     snapshot.window_size,
                     snapshot.raw_score,
                     snapshot.smoothed_score,
+                    snapshot.tier1_score,
+                    snapshot.tier2_score,
+                    json.dumps(list(snapshot.active_tiers)),
                     timestamp,
                 ),
             )
@@ -114,32 +127,30 @@ class ScoreStore:
             ).fetchone()[0]
 
             metric_rows = [
-                ("tool_error_rate", snapshot.metrics.tool_error_rate, None),
+                ("tool_error_rate", snapshot.tier1.tool_error_rate, None),
                 (
                     "action_mix_score",
-                    snapshot.metrics.action_mix_score,
-                    json.dumps(asdict(snapshot.metrics.action_mix)),
+                    snapshot.tier1.action_mix_score,
+                    json.dumps(asdict(snapshot.tier1.action_mix)),
                 ),
                 (
                     "user_message_length_slope",
-                    snapshot.metrics.user_message_length_slope,
+                    snapshot.tier1.user_message_length_slope,
                     None,
                 ),
                 (
                     "user_message_length_trend_score",
-                    snapshot.metrics.user_message_length_trend_score,
+                    snapshot.tier1.user_message_length_trend_score,
                     None,
                 ),
+                ("token_asymmetry_ratio", snapshot.tier1.token_asymmetry_ratio, None),
+                ("cache_efficiency_drop", snapshot.tier1.cache_efficiency_drop, None),
                 (
-                    "token_asymmetry_ratio",
-                    snapshot.metrics.token_asymmetry_ratio,
+                    "lexical_stagnation_index",
+                    snapshot.tier2.lexical_stagnation_index,
                     None,
                 ),
-                (
-                    "cache_efficiency_drop",
-                    snapshot.metrics.cache_efficiency_drop,
-                    None,
-                ),
+                ("correction_density", snapshot.tier2.correction_density, None),
             ]
 
             for name, value, details in metric_rows:
@@ -164,7 +175,7 @@ class ScoreStore:
         with sqlite3.connect(self.path) as connection:
             score_row = connection.execute(
                 """
-                SELECT id, episode_count, window_size, raw_score, smoothed_score, created_at
+                SELECT id, episode_count, window_size, raw_score, smoothed_score, tier1_score, tier2_score, active_tiers, created_at
                 FROM scores
                 WHERE session_id = ? AND chain_id = ?
                 ORDER BY episode_count DESC
@@ -190,7 +201,10 @@ class ScoreStore:
             "window_size": score_row[2],
             "raw_score": score_row[3],
             "smoothed_score": score_row[4],
-            "created_at": score_row[5],
+            "tier1_score": score_row[5],
+            "tier2_score": score_row[6],
+            "active_tiers": json.loads(score_row[7]) if score_row[7] else [],
+            "created_at": score_row[8],
             "metrics": [
                 {"name": name, "value": value, "details": details}
                 for name, value, details in metric_rows
@@ -205,3 +219,15 @@ def build_session_id(transcript_path: str | Path) -> str:
 
 def _utc_now() -> str:
     return datetime.now(UTC).isoformat()
+
+
+def _ensure_score_columns(connection: sqlite3.Connection) -> None:
+    columns = {
+        row[1] for row in connection.execute("PRAGMA table_info(scores)").fetchall()
+    }
+    if "tier1_score" not in columns:
+        connection.execute("ALTER TABLE scores ADD COLUMN tier1_score REAL")
+    if "tier2_score" not in columns:
+        connection.execute("ALTER TABLE scores ADD COLUMN tier2_score REAL")
+    if "active_tiers" not in columns:
+        connection.execute("ALTER TABLE scores ADD COLUMN active_tiers TEXT")
