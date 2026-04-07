@@ -272,7 +272,10 @@ def compute_tier2_metrics(episodes: list[Episode], *, config: Config) -> Tier2Me
         if message.role == "assistant" and message.text
     ]
     user_messages = [
-        episode.user_message.text for episode in episodes if episode.user_message.text
+        episode.user_message.text
+        for episode in episodes
+        if episode.user_message.text
+        and not episode.user_message.text.lstrip().startswith("<task-notification>")
     ]
 
     lexical_stagnation_index = _compute_lexical_stagnation_index(
@@ -330,11 +333,12 @@ def _compute_correction_marker_rate(
     if not user_messages:
         return 0.0
 
-    pattern_hits = 0
-    lowered_patterns = [pattern.lower() for pattern in patterns]
-    for message in user_messages:
-        lowered = message.lower()
-        if any(pattern in lowered for pattern in lowered_patterns):
-            pattern_hits += 1
-
+    compiled = [
+        re.compile(r"\b" + re.escape(pattern.lower()) + r"\b") for pattern in patterns
+    ]
+    pattern_hits = sum(
+        1
+        for message in user_messages
+        if any(rx.search(message.lower()) for rx in compiled)
+    )
     return pattern_hits / len(user_messages)

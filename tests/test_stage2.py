@@ -5,12 +5,13 @@ from typer.testing import CliRunner
 from convdrift.cli import app
 from convdrift.config import Config, default_config_text, load_config
 from convdrift.metrics import (
+    _compute_correction_marker_rate,
     _classify_tool_call,
     _classify_bash_call,
     _extract_ngrams,
     compute_tier2_metrics,
 )
-from convdrift.models import ToolCall
+from convdrift.models import Episode, Message, ToolCall
 from convdrift.parser import load_messages
 from convdrift.scoring import latest_score_snapshot
 from convdrift.segmenter import segment_messages
@@ -62,6 +63,38 @@ def test_tier2_metrics_detect_repetition_and_corrections() -> None:
 
     assert metrics.lexical_stagnation_index > 0.8
     assert metrics.correction_marker_rate > 0.5
+
+
+def test_correction_marker_rate_ignores_task_notifications() -> None:
+    metrics = compute_tier2_metrics(
+        [
+            Episode(
+                chain_id="main",
+                sequence=1,
+                user_message=Message(
+                    uuid="u1",
+                    parent_uuid=None,
+                    timestamp=None,
+                    role="user",
+                    message_kind="human",
+                    text_blocks=[
+                        "<task-notification><task-id>abc</task-id></task-notification>"
+                    ],
+                ),
+                messages=[],
+            )
+        ],
+        config=Config(),
+    )
+    assert metrics.correction_marker_rate == 0.0
+
+
+def test_correction_marker_rate_requires_word_boundary() -> None:
+    rate = _compute_correction_marker_rate(
+        ["la notacion es incorrecta"],
+        patterns=Config().patterns.corrections,
+    )
+    assert rate == 0.0
 
 
 def test_weight_overrides_change_composite_score(tmp_path: Path) -> None:
