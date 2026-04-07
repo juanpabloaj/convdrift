@@ -150,9 +150,24 @@
 
 ---
 
+## Stage 6 — Distribution
+
+**Goal**: make convdrift installable and usable without cloning the repository.
+
+**Done when**: `pip install convdrift` works; statusline integration requires no manual path setup; a release exists on PyPI.
+
+- [ ] Publish to PyPI: configure `pyproject.toml` for publication, set up release workflow
+- [ ] Entry points: verify `convdrift` CLI is available after pip install
+- [ ] Optional dependencies: `[embeddings]` extras group for `sentence-transformers` (Stage 4 dependency)
+- [ ] Minimum viable install documentation: one-command install + statusline setup in README
+- [ ] GitHub release tagged and linked from README
+
+---
+
 ## Future Work
 
 - Multi-session analysis: drift patterns across sessions in the same project
 - Privacy boundaries for non-personal use (transcript retention, embedding storage)
 - Sidechain propagation policy: when (if ever) to surface sidechain drift in the mainline score
 - API/IPC endpoint for editor integrations
+- Adapter for non-Claude-Code transcripts (Codex, Cursor, etc.)
