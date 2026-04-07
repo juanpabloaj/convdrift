@@ -10,10 +10,10 @@ The repository is currently in **Stage 3** (output layer complete):
 
 - JSONL transcript parsing and episode segmentation
 - Tier 1 metrics: tool error rate, action mix, user message length trend
-- Tier 2 metrics: lexical stagnation index, correction density
+- Tier 2 metrics: lexical stagnation index, correction marker rate
 - Composite Drift Score with configurable weights and thresholds
 - Claude Code statusline integration via `statusline-run`
-- Per-session drift timeline log
+- Per-session drift timeline log (immutable event log)
 
 See `DESIGN.md` for the full product rationale and `ROADMAP.md` for staged implementation details.
 
@@ -102,7 +102,7 @@ The default output format is `score-only` (`D:42`). Override via environment var
 
 Available formats: `score-only` · `with-metrics` · `by-tier` · `full`
 
-By default, convdrift stores scores in `~/.convdrift/store.sqlite3` and session timelines in `~/.convdrift/sessions/<session_id>.jsonl`. Override the store location with `CONVDRIFT_STORE_PATH` only if you have a specific reason to do so.
+By default, convdrift stores scores in `~/.convdrift/store.sqlite3` and session timelines in `~/.convdrift/sessions/<session_id>.jsonl`. The SQLite store reflects the current computed state; the per-session JSONL timeline is an immutable event log and is not rewritten retroactively after config or scoring changes. Override the store location with `CONVDRIFT_STORE_PATH` only if you have a specific reason to do so.
 
 Each invocation of the statusline script runs a full one-shot analysis and updates the store — no separate process required.
 

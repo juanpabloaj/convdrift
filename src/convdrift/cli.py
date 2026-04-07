@@ -256,7 +256,9 @@ def _render_statusline_from_snapshot(
             lexical_stagnation_index=_optional_float(
                 metrics.get("lexical_stagnation_index")
             ),
-            correction_density=_optional_float(metrics.get("correction_density")),
+            correction_marker_rate=_optional_float(
+                metrics.get("correction_marker_rate")
+            ),
         ),
         output_format=output_format,
     )

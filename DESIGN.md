@@ -94,11 +94,12 @@ Range: 0.0 (no errors) to 1.0 (all errors). The most direct signal available.
 
 **M2. Action Mix**
 Distribution of the assistant's tool calls within the window:
-- Productive: Write, Edit, NotebookEdit, Bash with write-effect commands
+- Productive: Write, Edit, NotebookEdit, Bash with write-effect commands (`git commit`, `git push`, redirects, etc.)
 - Exploratory: Read, Glob, Grep, Bash with read-only commands
 - Recursive: Agent (complexity escalation)
+- Neutral: Bash with build/test/run commands (`pytest`, `make`, `uv run`, `npm test`, `cargo build`, etc.) — not counted toward drift pressure
 
-Reported as a distribution (e.g., 30% productive / 60% exploratory / 10% recursive), not as a binary score. High exploratory ratio is normal at the start of a task; problematic if it persists when output would be expected.
+Reported as a distribution, not as a binary score. The drift signal uses `exploratory + recursive` as pressure; neutral commands are excluded. High exploratory ratio is normal at the start of a task; problematic if it persists when output would be expected.
 
 **M3. Token Asymmetry Ratio** *(experimental)*
 `output_tokens / (input_tokens + cache_read_input_tokens)` averaged over the window. Disproportionately high ratio suggests over-explanation or hedging. Weak signal on its own — include only if empirically validated.
@@ -114,8 +115,8 @@ Slope of user text message lengths (excluding automated tool results) over the l
 **M6. Lexical Stagnation Index**
 N-gram overlap (bigrams or trigrams) between the last K assistant text blocks. High overlap indicates the conversation is repeating the same content. Fast-path implementation of stagnation detection.
 
-**M7. Correction/Negation Density**
-Frequency of correction markers in user messages: "no", "that's wrong", "not what I meant", "again", "I already told you". Most direct signal of user dissatisfaction. Must support multilingual patterns.
+**M7. Correction Marker Rate**
+Proportion of user messages in the window containing correction markers: "no", "that's wrong", "not what I meant", "again", "I already told you". Most direct signal of user dissatisfaction. Must support multilingual patterns.
 
 ### Tier 3: Semantic (embedding computation, asynchronous)
 

@@ -62,7 +62,7 @@
 **Done when**: `convdrift run` outputs a T1+T2 composite score; weights and thresholds can be overridden via a config file without code changes.
 
 - [x] Implement M6: Lexical Stagnation Index (trigram overlap across last K assistant text blocks)
-- [x] Implement M7: Correction/Negation Density (multilingual pattern list, configurable)
+- [x] Implement M7: Correction Marker Rate (multilingual pattern list, configurable)
 - [x] Composite score engine: weighted combination across available tiers
 - [x] Config file (`convdrift.toml`): weights, thresholds, window size, smoothing window
 - [x] Score output formats: `score-only`, `with-metrics`, `by-tier`, `full` (see DESIGN.md)
@@ -86,6 +86,21 @@
 - [x] `convdrift statusline-run` — one-shot Claude Code integration: reads stdin JSON, analyzes transcript, updates store, prints indicator, exits
 - [x] `scripts/statusline.sh` updated: forwards Claude Code stdin to `statusline-run`
 - [x] Tests: `statusline-run` invoked with a JSON stdin payload produces correct output and updates store
+
+---
+
+## Stage 3.5 — Pre-Stage 4 Hardening
+
+**Goal**: resolve known metric inaccuracies and runtime risks before adding embedding complexity.
+
+**Done when**: latency is measured and either accepted or mitigated; M2 and M6 fixes are shipped; JSONL timeline semantics are documented; M7 rename is complete.
+
+- [x] **Latency audit**: benchmarked on 4–57 episode transcripts; p99 ≤ 180 ms (dominated by `uv run` startup, not computation); incremental checkpointing not needed at current scale
+- [x] **M2 fix**: add `NEUTRAL_BASH_PREFIXES` for build/test/run commands (`make`, `uv run`, `npm test`, `cargo build`, `pytest`, etc.); add `neutral` field to `ActionMix`; change `_classify_bash_call` fallback from `"exploratory"` to `"neutral"`; exclude `neutral` from drift score
+- [x] **M6 fix**: replace `[a-z0-9_]+` with `\w+` in `_extract_ngrams` so accented and non-ASCII tokens are not silently dropped before n-gram computation
+- [x] **M7 rename**: rename `correction_density` → `correction_marker_rate` throughout metrics, scoring, store, history, statusline, cli, and tests
+- [x] **JSONL timeline semantics**: document `append_session_timeline` as immutable event log (scores at time of computation, not recomputed)
+- [ ] **M4 normalization** *(low priority — may defer to Stage 5)*: evaluate whether dividing slope by `average_length` vs `max_length` better captures re-explanation signal; update `_normalize_positive_trend` if a clearly better formula is found
 
 ---
 

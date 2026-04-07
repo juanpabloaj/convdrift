@@ -30,10 +30,30 @@ READ_ONLY_BASH_PREFIXES = {
 WRITE_BASH_PREFIXES = {
     "cp",
     "git apply",
+    "git commit",
+    "git merge",
+    "git push",
+    "git rebase",
+    "git tag",
     "mkdir",
     "mv",
     "tee",
     "touch",
+}
+NEUTRAL_BASH_PREFIXES = {
+    "bundle exec",
+    "cargo build",
+    "cargo test",
+    "go build",
+    "go test",
+    "make",
+    "npm run",
+    "npm test",
+    "python -m pytest",
+    "pytest",
+    "rake",
+    "uv run",
+    "yarn",
 }
 
 
@@ -42,6 +62,7 @@ class ActionMix:
     productive: float
     exploratory: float
     recursive: float
+    neutral: float
 
 
 @dataclass(slots=True)
@@ -58,7 +79,7 @@ class Tier1Metrics:
 @dataclass(slots=True)
 class Tier2Metrics:
     lexical_stagnation_index: float
-    correction_density: float
+    correction_marker_rate: float
 
 
 def compute_tier1_metrics(
@@ -125,6 +146,7 @@ def _compute_action_mix(tool_calls: Iterable[ToolCall]) -> ActionMix:
     productive = 0
     exploratory = 0
     recursive = 0
+    neutral = 0
 
     for tool_call in tool_calls:
         category = _classify_tool_call(tool_call)
@@ -134,15 +156,18 @@ def _compute_action_mix(tool_calls: Iterable[ToolCall]) -> ActionMix:
             exploratory += 1
         elif category == "recursive":
             recursive += 1
+        elif category == "neutral":
+            neutral += 1
 
-    total = productive + exploratory + recursive
+    total = productive + exploratory + recursive + neutral
     if total == 0:
-        return ActionMix(productive=0.0, exploratory=0.0, recursive=0.0)
+        return ActionMix(productive=0.0, exploratory=0.0, recursive=0.0, neutral=0.0)
 
     return ActionMix(
         productive=productive / total,
         exploratory=exploratory / total,
         recursive=recursive / total,
+        neutral=neutral / total,
     )
 
 
@@ -172,7 +197,9 @@ def _classify_bash_call(tool_call: ToolCall) -> str:
         return "productive"
     if any(token in command for token in (">", ">>")):
         return "productive"
-    return "exploratory"
+    if any(command.startswith(prefix) for prefix in NEUTRAL_BASH_PREFIXES):
+        return "neutral"
+    return "neutral"
 
 
 def _linear_slope(values: list[int]) -> float:
@@ -253,13 +280,13 @@ def compute_tier2_metrics(episodes: list[Episode], *, config: Config) -> Tier2Me
         block_count=config.analysis.lexical_block_count,
         ngram_size=config.analysis.lexical_ngram_size,
     )
-    correction_density = _compute_correction_density(
+    correction_marker_rate = _compute_correction_marker_rate(
         user_messages,
         patterns=config.patterns.corrections,
     )
     return Tier2Metrics(
         lexical_stagnation_index=lexical_stagnation_index,
-        correction_density=correction_density,
+        correction_marker_rate=correction_marker_rate,
     )
 
 
@@ -288,7 +315,7 @@ def _compute_lexical_stagnation_index(
 
 
 def _extract_ngrams(text: str, ngram_size: int) -> Counter[tuple[str, ...]]:
-    tokens = re.findall(r"[a-z0-9_]+", text.lower())
+    tokens = re.findall(r"\w+", text.lower())
     if len(tokens) < ngram_size:
         return Counter()
     return Counter(
@@ -297,7 +324,7 @@ def _extract_ngrams(text: str, ngram_size: int) -> Counter[tuple[str, ...]]:
     )
 
 
-def _compute_correction_density(
+def _compute_correction_marker_rate(
     user_messages: list[str], *, patterns: list[str]
 ) -> float:
     if not user_messages:

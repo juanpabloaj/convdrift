@@ -26,7 +26,7 @@ class Tier1MetricWeights:
 @dataclass(slots=True)
 class Tier2MetricWeights:
     lexical_stagnation_index: float = 0.6
-    correction_density: float = 0.4
+    correction_marker_rate: float = 0.4
 
 
 @dataclass(slots=True)
@@ -112,7 +112,7 @@ user_message_length_trend_score = {config.tier1_weights.user_message_length_tren
 
 [weights.tier2]
 lexical_stagnation_index = {config.tier2_weights.lexical_stagnation_index}
-correction_density = {config.tier2_weights.correction_density}
+correction_marker_rate = {config.tier2_weights.correction_marker_rate}
 
 [thresholds]
 healthy_max = {config.thresholds.healthy_max}
@@ -171,8 +171,10 @@ def _apply_weights(config: Config, data: dict[str, Any]) -> None:
             config.tier2_weights.lexical_stagnation_index,
         )
     )
-    config.tier2_weights.correction_density = float(
-        tier2_data.get("correction_density", config.tier2_weights.correction_density)
+    config.tier2_weights.correction_marker_rate = float(
+        tier2_data.get(
+            "correction_marker_rate", config.tier2_weights.correction_marker_rate
+        )
     )
 
 

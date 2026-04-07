@@ -156,7 +156,7 @@ class ScoreStore:
                     snapshot.tier2.lexical_stagnation_index,
                     None,
                 ),
-                ("correction_density", snapshot.tier2.correction_density, None),
+                ("correction_marker_rate", snapshot.tier2.correction_marker_rate, None),
             ]
 
             for name, value, details in metric_rows:

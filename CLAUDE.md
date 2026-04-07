@@ -20,11 +20,11 @@ Session stagnation and looping detection for human-LLM coding sessions.
 - Unit of analysis: **episode** (one human prompt + all resulting assistant/tool turns)
 - Produces a Drift Score (0–100) from 3 metric tiers:
   - Tier 1: structural (tool error rate, action mix, token asymmetry*, cache efficiency*)
-  - Tier 2: lexical (lexical stagnation index, correction density)
+  - Tier 2: lexical (lexical stagnation index, correction marker rate)
   - Tier 3: semantic (semantic orbit detection*, goal alignment)
   - *experimental metrics
 - Score degrades gracefully: Tier 1 alone produces a useful signal
-- Output: composite score + per-metric breakdown; statusline script chooses what to display
+- Output: composite score + per-metric breakdown; statusline script chooses what to display. Session timelines are immutable event logs; the SQLite store is the current recomputed state.
 
 ## Architecture
 

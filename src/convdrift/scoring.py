@@ -107,7 +107,7 @@ def _compute_tier1_score(metrics: Tier1Metrics, *, config: Config) -> float:
 def _compute_tier2_score(metrics: Tier2Metrics, *, config: Config) -> float:
     normalized_score = (
         metrics.lexical_stagnation_index * config.tier2_weights.lexical_stagnation_index
-        + metrics.correction_density * config.tier2_weights.correction_density
+        + metrics.correction_marker_rate * config.tier2_weights.correction_marker_rate
     )
     return normalized_score * 100
 

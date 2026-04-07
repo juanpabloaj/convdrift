@@ -18,6 +18,13 @@ def append_session_timeline(
     sessions_dir: str | Path = DEFAULT_SESSIONS_DIR,
     chain_id: str = "main",
 ) -> None:
+    """Append a score snapshot to the session timeline log.
+
+    This is an immutable event log: each entry records the score at the time of
+    computation. Entries are never updated retroactively. If scores are recomputed
+    (e.g. after a config change), the SQLite store will reflect the new values but
+    this log will retain the original ones.
+    """
     session_id = build_session_id(transcript_path)
     path = session_log_path(session_id=session_id, sessions_dir=sessions_dir)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -47,7 +54,7 @@ def append_session_timeline(
             "action_mix_score": snapshot.tier1.action_mix_score,
             "user_message_length_trend_score": snapshot.tier1.user_message_length_trend_score,
             "lexical_stagnation_index": snapshot.tier2.lexical_stagnation_index,
-            "correction_density": snapshot.tier2.correction_density,
+            "correction_marker_rate": snapshot.tier2.correction_marker_rate,
         },
     }
     with path.open("a", encoding="utf-8") as handle:

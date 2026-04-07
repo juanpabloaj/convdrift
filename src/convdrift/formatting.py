@@ -20,7 +20,7 @@ def format_snapshot(
             f"D:{round(snapshot.smoothed_score):.0f} "
             f"[err:{snapshot.tier1.tool_error_rate:.2f} "
             f"rep:{snapshot.tier2.lexical_stagnation_index:.2f} "
-            f"cor:{snapshot.tier2.correction_density:.2f}]"
+            f"cor:{snapshot.tier2.correction_marker_rate:.2f}]"
         )
     if output_format == "by-tier":
         return (
@@ -59,7 +59,7 @@ def _format_full(
         f"mix={snapshot.tier1.action_mix_score:.2f} "
         f"user_trend={snapshot.tier1.user_message_length_trend_score:.2f} "
         f"rep={snapshot.tier2.lexical_stagnation_index:.2f} "
-        f"cor={snapshot.tier2.correction_density:.2f} "
+        f"cor={snapshot.tier2.correction_marker_rate:.2f} "
         f"token_asym={_format_optional(snapshot.tier1.token_asymmetry_ratio)} "
         f"cache_drop={_format_optional(snapshot.tier1.cache_efficiency_drop)}",
         "Action mix: "
