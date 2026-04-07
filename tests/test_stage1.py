@@ -81,6 +81,7 @@ def test_run_command_prints_detailed_score_and_metrics(tmp_path: Path) -> None:
 
     assert result.exit_code == 0
     assert "Drift score:" in result.stdout
-    assert "Tier scores:" in result.stdout
-    assert "Metrics:" in result.stdout
-    assert "Action mix:" in result.stdout
+    assert "Diagnosis:" in result.stdout
+    assert "Signals:" in result.stdout
+    assert "Assistant activity:" in result.stdout
+    assert "Technical detail:" in result.stdout

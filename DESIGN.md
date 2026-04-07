@@ -170,12 +170,17 @@ Thresholds are configurable.
 
 ### Score output
 
-The system exposes both the composite score and individual per-metric values. The statusline script or any consumer decides what to display. Example display configurations:
+The system exposes both the composite score and individual per-metric values. Two output contracts exist, one per command family:
 
-- Score only: `D:42`
-- With active metrics: `D:42 [err:0.3 rep:0.6 cor:0.1]`
-- By tier: `D:42 T1:38 T2:51`
-- Full detail: for dashboards or retrospective analysis
+**`statusline-run` / `statusline`** — compact indicator for real-time display:
+- `score-only` (default with config): `D:42`
+- `with-metrics` (default without config): `Mild drift 42 | errors 30%`
+
+**`run`** — verbose analysis for manual inspection:
+- `score-only`: `D:42`
+- `with-metrics`: `Mild drift 42 | errors 30%`
+- `by-tier`: `D:42 T1:38 T2:51`
+- `full` (default): score band, window, diagnosis, per-signal breakdown, action mix, technical detail
 
 ---
 
@@ -233,7 +238,7 @@ The system exposes both the composite score and individual per-metric values. Th
 ### Output layer
 
 **Primary runtime — `statusline-run`**
-The main Claude Code integration entrypoint. Invoked as `statusCommand` in `~/.claude/settings.json`. Receives a JSON object on stdin from Claude Code (containing `transcript_path`), runs a one-shot T1+T2 analysis, updates the score store and session log, prints a compact indicator (e.g., `D:42`), and exits. No separate process required.
+The main Claude Code integration entrypoint. Invoked as `statusCommand` in `~/.claude/settings.json`. Receives a JSON object on stdin from Claude Code (containing `transcript_path`), runs a one-shot T1+T2 analysis, updates the score store and session log, prints a compact indicator (e.g., `Mild drift 42 | errors 30%`), and exits. No separate process required. Supports `score-only` and `with-metrics` formats only; defaults to `with-metrics`.
 
 Internally uses the same fast-path pipeline as `run`. Incremental checkpointing may be added later if profiling shows one-shot is too slow for long sessions — without changing the user-facing `statusCommand` configuration.
 

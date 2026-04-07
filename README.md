@@ -4,9 +4,65 @@
 
 The tool reads JSONL transcripts, groups messages into **episodes** (one human prompt plus all resulting assistant/tool activity), and produces a Drift Score (0–100) that estimates when a session is becoming stuck.
 
+## Output
+
+### Statusline indicator (`statusline-run`)
+
+Compact single-line output shown in the Claude Code statusline:
+
+```
+Healthy 19 | corrections 60%
+```
+
+The label describes the current band; the number is the Drift Score (0–100); signals above the 20% threshold appear after the pipe, ranked by strength.
+
+### Analysis report (`run`)
+
+Verbose output for manual inspection:
+
+```
+Drift score: 26 (mild drift)
+Window: last 5 episodes (93 total)
+Diagnosis: Strongest signal in this window: user corrections (40%).
+Signals:
+- Tool errors: 5%
+- Repetition: 3%
+- User corrections: 40%
+- User re-explaining: 0%
+Assistant activity:
+- Productive: 33%
+- Exploratory: 62%
+- Recursive: 0%
+- Neutral: 5%
+Technical detail:
+- Raw score: 21.59
+- Tier 1: 23.81
+- Tier 2: 17.90
+```
+
+### Score interpretation
+
+| Score | Band | Meaning |
+|-------|------|---------|
+| 0–25 | **Healthy** | Forward progress, low error rate |
+| 25–50 | **Mild drift** | Some repetition or unproductive exploration |
+| 50–75 | **Significant drift** | Multiple degradation signals active |
+| 75–100 | **Stuck** | Session is looping; consider starting a new session |
+
+### Signals
+
+| Signal | What it measures |
+|--------|-----------------|
+| `errors` | Proportion of tool calls that returned errors |
+| `corrections` | User messages containing correction markers ("no", "that's wrong", "again", etc.) |
+| `repetition` | N-gram overlap across recent assistant responses |
+| `re-explaining` | User messages growing longer over time (escalating re-explanation) |
+
+---
+
 ## Status
 
-The repository is currently in **Stage 3** (output layer complete):
+The repository is currently in **Stage 3.5** (pre-Stage 4 hardening complete):
 
 - JSONL transcript parsing and episode segmentation
 - Tier 1 metrics: tool error rate, action mix, user message length trend
@@ -92,15 +148,17 @@ Add to `~/.claude/settings.json`:
 }
 ```
 
-The default output format is `score-only` (`D:42`). Override via environment variable:
+The default output format is `with-metrics` (`Healthy 19 | corrections 60%`). Override via `--output-format`:
 
 ```json
 {
-  "statusCommand": "CONVDRIFT_OUTPUT_FORMAT=with-metrics /path/to/convdrift/scripts/statusline.sh"
+  "statusCommand": "CONVDRIFT_OUTPUT_FORMAT=score-only /path/to/convdrift/scripts/statusline.sh"
 }
 ```
 
-Available formats: `score-only` · `with-metrics` · `by-tier` · `full`
+Supported formats for `statusline-run`: `with-metrics` (default) · `score-only`
+
+For verbose analysis use `convdrift run`, which additionally supports `by-tier` and `full`.
 
 By default, convdrift stores scores in `~/.convdrift/store.sqlite3` and session timelines in `~/.convdrift/sessions/<session_id>.jsonl`. The SQLite store reflects the current computed state; the per-session JSONL timeline is an immutable event log and is not rewritten retroactively after config or scoring changes. Override the store location with `CONVDRIFT_STORE_PATH` only if you have a specific reason to do so.
 

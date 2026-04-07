@@ -271,10 +271,10 @@ def _resolve_statusline_output_format(
     output_format: str | None,
 ) -> str:
     if output_format is not None:
-        return output_format
+        return _normalize_statusline_output_format(output_format)
     if config_path is not None or DEFAULT_CONFIG_PATH.exists():
-        return config.analysis.output_format
-    return "score-only"
+        return _normalize_statusline_output_format(config.analysis.output_format)
+    return "with-metrics"
 
 
 def _read_status_context() -> dict[str, object]:
@@ -346,7 +346,7 @@ def statusline(
     transcript: Path | None = typer.Option(None),
     session_id: str | None = typer.Option(None),
     chain_id: str = typer.Option("main"),
-    output_format: str = typer.Option("score-only"),
+    output_format: str = typer.Option("with-metrics"),
 ) -> None:
     """Read the score store and render a compact statusline indicator."""
     score_store = ScoreStore(store_path)
@@ -367,10 +367,24 @@ def statusline(
     if snapshot is None:
         raise typer.BadParameter("No snapshot found for the requested session.")
 
-    typer.echo(_render_statusline_from_snapshot(snapshot, output_format))
+    typer.echo(
+        _render_statusline_from_snapshot(
+            snapshot,
+            _normalize_statusline_output_format(output_format),
+        )
+    )
 
 
 def _optional_float(value: object) -> float | None:
     if value is None:
         return None
     return float(value)
+
+
+def _normalize_statusline_output_format(output_format: str) -> str:
+    if output_format in {"score-only", "with-metrics"}:
+        return output_format
+    raise typer.BadParameter(
+        f"Format '{output_format}' is not supported for statusline. "
+        "Use 'score-only' or 'with-metrics'."
+    )

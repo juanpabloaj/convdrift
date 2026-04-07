@@ -9,7 +9,12 @@ from typer.testing import CliRunner
 
 from convdrift.cli import app, run_analysis_loop
 from convdrift.config import Config
+from convdrift.formatting import format_snapshot
 from convdrift.history import list_session_summaries
+from convdrift.scoring import latest_score_snapshot
+from convdrift.segmenter import segment_messages
+from convdrift.parser import load_messages
+from convdrift.statusline import StoredSnapshot, format_statusline
 from convdrift.store import ScoreStore, build_session_id
 
 
@@ -84,8 +89,7 @@ def test_statusline_reads_score_store(tmp_path: Path) -> None:
     )
 
     assert result.exit_code == 0
-    assert "D:" in result.stdout
-    assert "[err:" in result.stdout
+    assert "Healthy" in result.stdout
 
 
 def test_statusline_run_with_valid_stdin_runs_analysis_and_prints_indicator(
@@ -108,7 +112,7 @@ def test_statusline_run_with_valid_stdin_runs_analysis_and_prints_indicator(
     )
 
     assert result.exit_code == 0
-    assert "D:" in result.stdout
+    assert "Healthy" in result.stdout
     assert store_path.exists()
     latest = ScoreStore(store_path).fetch_latest_snapshot(
         transcript_path=GOOD_FIXTURE_PATH
@@ -122,6 +126,68 @@ def test_statusline_run_with_missing_transcript_path_exits_cleanly() -> None:
 
     assert result.exit_code == 0
     assert result.stdout == ""
+
+
+def test_statusline_run_rejects_unsupported_output_format() -> None:
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["statusline-run", "--output-format", "full"],
+        input=json.dumps({"transcript_path": str(GOOD_FIXTURE_PATH)}),
+    )
+
+    assert result.exit_code != 0
+    assert "not supported for statusline" in result.output
+
+
+def test_statusline_with_metrics_hides_signals_below_threshold() -> None:
+    snapshot = StoredSnapshot(
+        smoothed_score=19.0,
+        tier1_score=15.0,
+        tier2_score=8.0,
+        tool_error_rate=0.19,
+        lexical_stagnation_index=0.10,
+        correction_marker_rate=0.20,
+    )
+
+    result = format_statusline(snapshot, output_format="with-metrics")
+
+    assert result == "Healthy 19"
+
+
+def test_statusline_with_metrics_shows_top_signal_above_threshold() -> None:
+    snapshot = StoredSnapshot(
+        smoothed_score=19.0,
+        tier1_score=15.0,
+        tier2_score=8.0,
+        tool_error_rate=0.33,
+        lexical_stagnation_index=0.10,
+        correction_marker_rate=0.20,
+    )
+
+    result = format_statusline(snapshot, output_format="with-metrics")
+
+    assert result == "Healthy 19 | errors 33%"
+
+
+def test_full_format_includes_diagnosis_and_signals() -> None:
+    config = Config()
+    episodes = segment_messages(load_messages(GOOD_FIXTURE_PATH))["main"]
+    snapshot = latest_score_snapshot(episodes, config=config)
+
+    assert snapshot is not None
+    result = format_snapshot(
+        snapshot=snapshot,
+        config=config,
+        transcript_path=str(GOOD_FIXTURE_PATH),
+        store_path="/tmp/test.sqlite3",
+        sidechain_count=0,
+        output_format="full",
+    )
+
+    assert "Diagnosis:" in result
+    assert "Signals:" in result
 
 
 def test_follow_loop_processes_growing_transcript_end_to_end(tmp_path: Path) -> None:

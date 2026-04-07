@@ -81,7 +81,7 @@
 - [x] `convdrift log <session_id>` — print drift timeline for a past session
 - [x] `convdrift sessions` — list recorded sessions
 - [x] `convdrift statusline` — read-only store query for power users / debugging
-- [x] Support display formats: `D:42`, `D:42 [err:0.3 rep:0.6]`, `D:42 T1:38 T2:51`
+- [x] Support display formats for `statusline`/`statusline-run`: `score-only` (`D:42`), `with-metrics` (`Mild drift 42 | errors 30%`)
 - [x] Integration test: run against a live (growing) transcript file end-to-end
 - [x] `convdrift statusline-run` — one-shot Claude Code integration: reads stdin JSON, analyzes transcript, updates store, prints indicator, exits
 - [x] `scripts/statusline.sh` updated: forwards Claude Code stdin to `statusline-run`
@@ -101,6 +101,7 @@
 - [x] **M7 rename**: rename `correction_density` → `correction_marker_rate` throughout metrics, scoring, store, history, statusline, cli, and tests
 - [x] **JSONL timeline semantics**: document `append_session_timeline` as immutable event log (scores at time of computation, not recomputed)
 - [x] **M2 unknown-tool fallback**: change `_classify_tool_call` fallback for unrecognized non-Bash tools (MCP tools, custom tools) from `"exploratory"` to `"neutral"`; add unit test
+- [x] **Output UX**: `with-metrics` statusline shows `"Healthy 19 | errors 33%"` (human labels, %, signals above 0.20 threshold, top 2 only); `run --full` adds `Diagnosis:` line (strongest signal) and human-readable `Signals:` section with percentages; `statusline-run` / `statusline` restricted to `score-only` and `with-metrics` (default `with-metrics`)
 - [ ] **Real-session validation**: run `statusline-run` on 2–3 real Claude Code sessions; verify score direction matches perceived session quality; note any obvious false positives
 - [ ] **M4 normalization** *(low priority — may defer to Stage 5)*: evaluate whether dividing slope by `average_length` vs `max_length` better captures re-explanation signal; update `_normalize_positive_trend` if a clearly better formula is found
 
