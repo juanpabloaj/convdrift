@@ -9,6 +9,7 @@ from convdrift.metrics import (
     _classify_tool_call,
     _classify_bash_call,
     _extract_ngrams,
+    compute_tier1_metrics,
     compute_tier2_metrics,
 )
 from convdrift.models import Episode, Message, ToolCall
@@ -95,6 +96,56 @@ def test_correction_marker_rate_requires_word_boundary() -> None:
         patterns=Config().patterns.corrections,
     )
     assert rate == 0.0
+
+
+def test_user_message_length_trend_ignores_task_notifications() -> None:
+    short_messages = [
+        "check parser status now",
+        "inspect the latest diff",
+        "run the tests again",
+        "review the file paths",
+    ]
+    long_notification = (
+        "<task-notification>"
+        + ("very long automated notification text " * 12)
+        + "</task-notification>"
+    )
+    episodes = [
+        Episode(
+            chain_id="main",
+            sequence=index,
+            user_message=Message(
+                uuid=f"u{index}",
+                parent_uuid=None,
+                timestamp=None,
+                role="user",
+                message_kind="human",
+                text_blocks=[text],
+            ),
+            messages=[],
+        )
+        for index, text in enumerate(short_messages, start=1)
+    ]
+    episodes.append(
+        Episode(
+            chain_id="main",
+            sequence=5,
+            user_message=Message(
+                uuid="u5",
+                parent_uuid=None,
+                timestamp=None,
+                role="user",
+                message_kind="human",
+                text_blocks=[long_notification],
+            ),
+            messages=[],
+        )
+    )
+
+    metrics = compute_tier1_metrics(episodes, config=Config())
+
+    assert metrics.user_message_length_slope == 0.0
+    assert metrics.user_message_length_trend_score == 0.0
 
 
 def test_weight_overrides_change_composite_score(tmp_path: Path) -> None:

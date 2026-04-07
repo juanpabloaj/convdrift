@@ -114,7 +114,12 @@ def compute_tier1_metrics(
     # This is intentionally a drift-oriented score, not the raw action mix ratio.
     action_mix_score = min(1.0, action_mix.exploratory + action_mix.recursive)
 
-    user_lengths = [len(episode.user_message.text.split()) for episode in episodes]
+    user_lengths = [
+        len(episode.user_message.text.split())
+        for episode in episodes
+        if episode.user_message.text
+        and not episode.user_message.text.lstrip().startswith("<task-notification>")
+    ]
     user_message_length_slope = _linear_slope(user_lengths)
     average_length = sum(user_lengths) / len(user_lengths) if user_lengths else 0.0
     user_message_length_trend_score = _normalize_positive_trend(

@@ -103,6 +103,7 @@
 - [x] **M2 unknown-tool fallback**: change `_classify_tool_call` fallback for unrecognized non-Bash tools (MCP tools, custom tools) from `"exploratory"` to `"neutral"`; add unit test
 - [x] **Output UX**: `with-metrics` statusline shows `"Healthy 19 | errors 33%"` (human labels, %, signals above 0.20 threshold, top 2 only); `run --full` adds `Diagnosis:` line (strongest signal) and human-readable `Signals:` section with percentages; `statusline-run` / `statusline` restricted to `score-only` and `with-metrics` (default `with-metrics`)
 - [x] **M7b fix**: filter `<task-notification>` system messages from `correction_marker_rate` input; switch pattern matching from substring to word-boundary regex (`\bno\b`) to prevent false positives from system events and words containing correction patterns as substrings
+- [x] **M4b fix**: filter `<task-notification>` system messages from `user_message_length_trend_score` input; long system-injected messages were creating false upward trends in the re-explaining signal
 - [ ] **Real-session validation**: run `statusline-run` on 2–3 real Claude Code sessions; verify score direction matches perceived session quality; note any obvious false positives
 - [ ] **M4 normalization** *(low priority — may defer to Stage 5)*: evaluate whether dividing slope by `average_length` vs `max_length` better captures re-explanation signal; update `_normalize_positive_trend` if a clearly better formula is found
 
