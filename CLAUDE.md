@@ -9,8 +9,10 @@ Session stagnation and looping detection for human-LLM coding sessions.
 
 ## Project State
 
-- Phase: design complete, pre-implementation
+- Phase: Stage 3 complete (output layer)
+- Stages 0–3 implemented; Stage 4 (embeddings/daemon) and Stage 5 (calibration) pending
 - See DESIGN.md for the full proposal, problem definition, metrics, and architecture
+- See ROADMAP.md for implementation stages
 
 ## Key Concepts
 
@@ -31,7 +33,9 @@ Session stagnation and looping detection for human-LLM coding sessions.
 - Fast path (T1+T2): sub-second, sliding window over last W episodes
 - Slow path (T3): background daemon with embeddings, triggered every N episodes
 - Score smoothing: moving average over last 3 episodes to prevent statusline jitter
-- Score store: file-based, readable without locking, includes per-tier freshness
+- Score store: SQLite with WAL mode at `~/.convdrift/store.sqlite3`; session timelines at `~/.convdrift/sessions/<session_id>.jsonl`
+- Primary runtime: `statusline-run` — invoked as Claude Code `statusCommand`, one-shot analysis + store update + indicator output per refresh. No separate process required.
+- `run --follow`: opt-in long-running watcher for manual monitoring or debugging
 
 ## Design Principles
 

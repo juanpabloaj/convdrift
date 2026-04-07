@@ -230,7 +230,15 @@ The system exposes both the composite score and individual per-metric values. Th
 - Configurable: smoothing window can be reduced to 1 (no smoothing) for retrospective use
 
 ### Output layer
-- **Statusline**: reads score store, formats configurable indicator (e.g., `D:42`)
+
+**Primary runtime — `statusline-run`**
+The main Claude Code integration entrypoint. Invoked as `statusCommand` in `~/.claude/settings.json`. Receives a JSON object on stdin from Claude Code (containing `transcript_path`), runs a one-shot T1+T2 analysis, updates the score store and session log, prints a compact indicator (e.g., `D:42`), and exits. No separate process required.
+
+Internally uses the same fast-path pipeline as `run`. Incremental checkpointing may be added later if profiling shows one-shot is too slow for long sessions — without changing the user-facing `statusCommand` configuration.
+
+**Secondary commands**
+- **`run --follow`**: long-running watcher for manual monitoring or debugging. Not required for normal statusline use.
+- **`statusline`**: read-only store query, formats indicator from last persisted snapshot. Useful when `run --follow` is active separately.
 - **Log/history**: per-session drift timeline for retrospective analysis
 - **API/IPC**: for editors, dashboards, or other tools
 

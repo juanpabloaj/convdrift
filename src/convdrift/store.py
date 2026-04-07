@@ -10,12 +10,18 @@ from pathlib import Path
 from .scoring import ScoreSnapshot
 
 
+DEFAULT_STORE_PATH = Path.home() / ".convdrift" / "store.sqlite3"
+
+
 class ScoreStore:
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path)
 
     def initialize(self) -> None:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
         with sqlite3.connect(self.path) as connection:
+            connection.execute("PRAGMA journal_mode=WAL")
+            connection.execute("PRAGMA busy_timeout=5000")
             connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS sessions (
@@ -210,6 +216,28 @@ class ScoreStore:
                 for name, value, details in metric_rows
             ],
         }
+
+    def fetch_latest_snapshot_for_session(
+        self,
+        *,
+        session_id: str,
+        chain_id: str = "main",
+    ) -> dict[str, object] | None:
+        with sqlite3.connect(self.path) as connection:
+            session_row = connection.execute(
+                """
+                SELECT transcript_path
+                FROM sessions
+                WHERE id = ?
+                """,
+                (session_id,),
+            ).fetchone()
+        if session_row is None:
+            return None
+        return self.fetch_latest_snapshot(
+            transcript_path=session_row[0],
+            chain_id=chain_id,
+        )
 
 
 def build_session_id(transcript_path: str | Path) -> str:

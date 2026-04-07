@@ -73,16 +73,19 @@
 
 ## Stage 3 — Output Layer
 
-**Goal**: statusline integration and per-session log.
+**Goal**: Claude Code statusline integration and per-session log.
 
-**Done when**: a shell script reads the score store and renders a configurable statusline indicator; session history is queryable after the fact.
+**Done when**: `convdrift statusline-run` is configured as `statusCommand` in `~/.claude/settings.json`, updates the store on each refresh, and renders a configurable drift indicator with no separate process required; session history is queryable after the fact.
 
-- [ ] Statusline shell script (`scripts/statusline.sh`): reads score store, formats output
-- [ ] Support display formats: `D:42`, `D:42 [err:0.3 rep:0.6]`, `D:42 T1:38 T2:51`
-- [ ] Per-session JSONL log: drift timeline written to `~/.convdrift/sessions/<session_id>.jsonl`
-- [ ] `convdrift log <session_id>` — print drift timeline for a past session
-- [ ] `convdrift sessions` — list recorded sessions
-- [ ] Integration test: run against a live (growing) transcript file end-to-end
+- [x] Per-session JSONL log: drift timeline written to `~/.convdrift/sessions/<session_id>.jsonl`
+- [x] `convdrift log <session_id>` — print drift timeline for a past session
+- [x] `convdrift sessions` — list recorded sessions
+- [x] `convdrift statusline` — read-only store query for power users / debugging
+- [x] Support display formats: `D:42`, `D:42 [err:0.3 rep:0.6]`, `D:42 T1:38 T2:51`
+- [x] Integration test: run against a live (growing) transcript file end-to-end
+- [x] `convdrift statusline-run` — one-shot Claude Code integration: reads stdin JSON, analyzes transcript, updates store, prints indicator, exits
+- [x] `scripts/statusline.sh` updated: forwards Claude Code stdin to `statusline-run`
+- [x] Tests: `statusline-run` invoked with a JSON stdin payload produces correct output and updates store
 
 ---
 
