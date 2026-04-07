@@ -45,6 +45,10 @@ Session stagnation and looping detection for human-LLM coding sessions.
 - Stack-agnostic: DESIGN.md does not prescribe implementation technologies
 - Multilingual: handles mixed-language conversations
 
+## Git Conventions
+
+- Do not use `git add -A` or `git add .` — stage files explicitly by name to avoid accidentally including unintended files.
+
 ## Open Questions (see DESIGN.md)
 
 - Ground truth: how to validate score correlation with perceived degradation
