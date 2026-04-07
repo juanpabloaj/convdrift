@@ -101,6 +101,7 @@
 - [x] **M7 rename**: rename `correction_density` → `correction_marker_rate` throughout metrics, scoring, store, history, statusline, cli, and tests
 - [x] **JSONL timeline semantics**: document `append_session_timeline` as immutable event log (scores at time of computation, not recomputed)
 - [x] **M2 unknown-tool fallback**: change `_classify_tool_call` fallback for unrecognized non-Bash tools (MCP tools, custom tools) from `"exploratory"` to `"neutral"`; add unit test
+- [ ] **Real-session validation**: run `statusline-run` on 2–3 real Claude Code sessions; verify score direction matches perceived session quality; note any obvious false positives
 - [ ] **M4 normalization** *(low priority — may defer to Stage 5)*: evaluate whether dividing slope by `average_length` vs `max_length` better captures re-explanation signal; update `_normalize_positive_trend` if a clearly better formula is found
 
 ---
@@ -110,6 +111,16 @@
 **Goal**: M8 and M9 computed via local embeddings; background daemon updates the score store.
 
 **Done when**: daemon runs alongside a live session, enriches the score store with T3 metrics every N new episodes; main score degrades gracefully when daemon is not running.
+
+### Design phase (complete before implementation)
+
+- [ ] **Daemon runtime model**: decide between persistent user-level process, per-session process, or opportunistic worker launched by CLI; document decision in DESIGN.md
+- [ ] **Coordination with `statusline-run`**: define whether `statusline-run` only reads pre-computed T3 from the store, can trigger pending work, or has no interaction with the daemon beyond shared SQLite; document in DESIGN.md
+- [ ] **SQLite write/read semantics**: define which process owns which tables, how pending work is identified, and how to prevent race conditions or duplicate computation; document in DESIGN.md
+- [ ] **Failure model**: define behavior when daemon is absent, crashes, falls behind, or cannot load the embedding model; T1+T2 score must continue unaffected; document in DESIGN.md
+- [ ] **Packaging**: add `sentence-transformers` as an optional dependency (`[embeddings]` extras group in `pyproject.toml`); T3 path raises a clear error if the extra is not installed
+
+### Implementation
 
 - [ ] Embedding model integration (`sentence-transformers`, multilingual model)
 - [ ] Implement M8: Semantic Orbit Detection (cosine similarity between consecutive episode embeddings)

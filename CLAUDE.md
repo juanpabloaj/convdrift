@@ -9,8 +9,8 @@ Session stagnation and looping detection for human-LLM coding sessions.
 
 ## Project State
 
-- Phase: Stage 3 complete (output layer)
-- Stages 0–3 implemented; Stage 4 (embeddings/daemon) and Stage 5 (calibration) pending
+- Phase: Stage 3.5 complete (pre-Stage 4 hardening)
+- Stages 0–3.5 implemented; Stage 4 (embeddings/daemon) and Stage 5 (calibration) pending
 - See DESIGN.md for the full proposal, problem definition, metrics, and architecture
 - See ROADMAP.md for implementation stages
 
