@@ -54,8 +54,8 @@ Technical detail:
 | Signal | What it measures |
 |--------|-----------------|
 | `errors` | Proportion of tool calls that returned errors |
-| `corrections` | User messages containing correction markers ("no", "that's wrong", "again", etc.) |
 | `repetition` | N-gram overlap across recent assistant responses |
+| `corrections` | User messages containing correction markers ("no", "that's wrong", "again", etc.) |
 | `re-explaining` | User messages growing longer over time (escalating re-explanation) |
 
 ---
