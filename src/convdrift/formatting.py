@@ -25,8 +25,8 @@ def format_snapshot(
     if output_format == "by-tier":
         return (
             f"D:{round(snapshot.smoothed_score):.0f} "
-            f"T1:{round(snapshot.tier1_score):.0f} "
-            f"T2:{round(snapshot.tier2_score):.0f}"
+            f"Str:{round(snapshot.tier1_score):.0f} "
+            f"Lex:{round(snapshot.tier2_score):.0f}"
         )
     return _format_full(
         snapshot=snapshot,
@@ -66,8 +66,8 @@ def _format_full(
         f"- Neutral: {_format_percent(action_mix.neutral)}",
         "Technical detail:",
         f"- Raw score: {snapshot.raw_score:.2f}",
-        f"- Tier 1: {snapshot.tier1_score:.2f}",
-        f"- Tier 2: {snapshot.tier2_score:.2f}",
+        f"- Structural: {snapshot.tier1_score:.2f}",
+        f"- Lexical: {snapshot.tier2_score:.2f}",
     ]
     if sidechain_count:
         lines.append(

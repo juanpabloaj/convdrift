@@ -65,7 +65,7 @@
 - [x] Implement M7: Correction Marker Rate (multilingual pattern list, configurable)
 - [x] Composite score engine: weighted combination across available tiers
 - [x] Config file (`convdrift.toml`): weights, thresholds, window size, smoothing window
-- [x] Score output formats: `score-only`, `with-metrics`, `by-tier`, `full` (see DESIGN.md)
+- [x] Score output formats: `score-only`, `with-metrics`, `by-tier` (`D:42 Str:38 Lex:51`), `full` (see DESIGN.md)
 - [x] `convdrift config init` — generate default config file
 - [x] Tests: weight overrides produce expected composite changes
 

@@ -36,8 +36,8 @@ Assistant activity:
 - Neutral: 5%
 Technical detail:
 - Raw score: 21.59
-- Tier 1: 23.81
-- Tier 2: 17.90
+- Structural: 23.81
+- Lexical: 17.90
 ```
 
 ### Score interpretation
@@ -65,8 +65,8 @@ Technical detail:
 The repository is currently in **Stage 3.5** (pre-Stage 4 hardening complete):
 
 - JSONL transcript parsing and episode segmentation
-- Tier 1 metrics: tool error rate, action mix, user message length trend
-- Tier 2 metrics: lexical stagnation index, correction marker rate
+- Structural metrics (T1): tool error rate, action mix, user message length trend
+- Lexical metrics (T2): lexical stagnation index, correction marker rate
 - Composite Drift Score with configurable weights and thresholds
 - Claude Code statusline integration via `statusline-run`
 - Per-session drift timeline log (immutable event log)

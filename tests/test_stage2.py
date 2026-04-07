@@ -115,5 +115,5 @@ def test_run_supports_stage2_output_formats(tmp_path: Path) -> None:
 
     assert result.exit_code == 0
     assert "D:" in result.stdout
-    assert "T1:" in result.stdout
-    assert "T2:" in result.stdout
+    assert "Str:" in result.stdout
+    assert "Lex:" in result.stdout

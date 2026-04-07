@@ -179,7 +179,7 @@ The system exposes both the composite score and individual per-metric values. Tw
 **`run`** — verbose analysis for manual inspection:
 - `score-only`: `D:42`
 - `with-metrics`: `Mild drift 42 | errors 30%`
-- `by-tier`: `D:42 T1:38 T2:51`
+- `by-tier`: `D:42 Str:38 Lex:51`
 - `full` (default): score band, window, diagnosis, per-signal breakdown, action mix, technical detail
 
 ---
