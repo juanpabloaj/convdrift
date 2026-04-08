@@ -291,6 +291,7 @@ Situations where the score will produce false positives or misleading signals:
 - **Hidden internal reasoning**: the model may be "orbiting" in its thinking blocks while producing superficially varied tool calls. convdrift cannot see this.
 - **Window sensitivity**: window too small → a single retry looks like 100% error rate. Window too large → misses the start of a spiral. Default W=5 episodes is an initial balance.
 - **Model and environment variance**: metrics may behave differently across model versions, permission modes, and tool availability.
+- **Pasted agent output in user messages**: when a user copies another agent's response (e.g. Codex output) and pastes it into the conversation, the resulting user message is very long and may contain words that match correction patterns. This inflates both `user_message_length_trend_score` and `correction_marker_rate`. No automatic fix exists without heuristics that risk new false positives. Expected to surface naturally during Stage 5 labeling.
 
 ---
 
