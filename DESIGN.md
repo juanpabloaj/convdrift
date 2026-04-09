@@ -292,6 +292,7 @@ Situations where the score will produce false positives or misleading signals:
 - **Window sensitivity**: window too small → a single retry looks like 100% error rate. Window too large → misses the start of a spiral. Default W=5 episodes is an initial balance.
 - **Model and environment variance**: metrics may behave differently across model versions, permission modes, and tool availability.
 - **Pasted agent output in user messages**: when a user copies another agent's response (e.g. Codex output) and pastes it into the conversation, the resulting user message is very long and may contain words that match correction patterns. This inflates both `user_message_length_trend_score` and `correction_marker_rate`. No automatic fix exists without heuristics that risk new false positives. Expected to surface naturally during Stage 5 labeling.
+- **"No" as a correction marker in Spanish**: the pattern `"no"` fires on any standalone occurrence of the word, including negations that are not corrections (e.g. "no pido que lo cambies, solo quiero entender"). In Spanish, `"no"` is grammatically ubiquitous and does not reliably distinguish between a correction ("no, eso está mal") and a plain negation. This produces false positives in `correction_marker_rate` for Spanish-language sessions. A language-aware heuristic (e.g. requiring "no" to appear at the start of a message, or combined with a following negative phrase) would reduce false positives but risks missing real corrections. Deferred to Stage 5 calibration with labeled data.
 
 ---
 
